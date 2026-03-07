@@ -1,35 +1,35 @@
 // ============================================================
 //  SPENDSMART — DashboardPage.jsx
+//  Phase 2 — Real Firebase Integration
 //  Author  : Hassan Javed
 //  GitHub  : https://github.com/Hassanjaved17
 //  Built   : March 2026
 //  © 2026 Hassan Javed — All Rights Reserved
 // ============================================================
 
-import { useState } from "react";
-import Footer from "../components/ui/Footer";
-import { Plus } from "lucide-react";
-import Navbar from "../components/ui/Navbar";
-import BalanceCard from "../components/dashboard/BalanceCard";
-import StatsRow from "../components/dashboard/StatsRow";
-import AddTransaction from "../components/transactions/AddTransaction";
-import TransactionList from "../components/transactions/TransactionList";
-import SpendingChart from "../components/charts/SpendingChart";
-
-// ── Dummy transactions for UI preview ────────────────────────
-const DUMMY_TRANSACTIONS = [
-  { id: "1", type: "income", amount: 50000, category: "Salary", note: "March salary", date: "2026-03-01" },
-  { id: "2", type: "expense", amount: 3500, category: "Food", note: "Grocery run", date: "2026-03-02" },
-  { id: "3", type: "expense", amount: 2000, category: "Transport", note: "Uber rides", date: "2026-03-03" },
-  { id: "4", type: "expense", amount: 8000, category: "Shopping", note: "New shoes", date: "2026-03-04" },
-  { id: "5", type: "expense", amount: 1500, category: "Bills", note: "Electricity bill", date: "2026-03-05" },
-  { id: "6", type: "income", amount: 15000, category: "Freelance", note: "Logo design", date: "2026-03-06" },
-  { id: "7", type: "expense", amount: 500, category: "Entertainment", note: "Netflix", date: "2026-03-07" },
-];
+import { useState }        from "react";
+import { Plus }            from "lucide-react";
+import Navbar              from "../components/ui/Navbar";
+import BalanceCard         from "../components/dashboard/BalanceCard";
+import StatsRow            from "../components/dashboard/StatsRow";
+import AddTransaction      from "../components/transactions/AddTransaction";
+import TransactionList     from "../components/transactions/TransactionList";
+import SpendingChart       from "../components/charts/SpendingChart";
+import Footer              from "../components/ui/Footer";
+import useTransactions     from "../hooks/useTransactions";
+import { Loader2 }         from "lucide-react";
 
 const DashboardPage = () => {
   const [showModal, setShowModal] = useState(false);
-  const [transactions, setTransactions] = useState(DUMMY_TRANSACTIONS);
+
+  // ── Real Firebase data via hook ───────────────────────────
+  const {
+    transactions,
+    loading,
+    error,
+    addTransaction,
+    deleteTransaction,
+  } = useTransactions();
 
   // ── Computed values ───────────────────────────────────────
   const totalIncome = transactions
@@ -41,7 +41,7 @@ const DashboardPage = () => {
     .reduce((sum, t) => sum + t.amount, 0);
 
   // This month expenses
-  const currentMonth = new Date().toISOString().slice(0, 7);
+  const currentMonth    = new Date().toISOString().slice(0, 7);
   const monthlyExpenses = transactions
     .filter((t) => t.type === "expense" && t.date.startsWith(currentMonth))
     .reduce((sum, t) => sum + t.amount, 0);
@@ -59,15 +59,42 @@ const DashboardPage = () => {
 
   // ── Handlers ─────────────────────────────────────────────
   const handleAdd = async (data) => {
-    const newTransaction = { ...data, id: Date.now().toString() };
-    setTransactions((prev) => [newTransaction, ...prev]);
-    // Firebase addDoc goes here in Phase 2
+    await addTransaction(data);
   };
 
-  const handleDelete = (id) => {
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
-    // Firebase deleteDoc goes here in Phase 2
+  const handleDelete = async (id) => {
+    await deleteTransaction(id);
   };
+
+  // ── Loading state ─────────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#050a06] flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 size={28} className="animate-spin text-emerald-500" />
+            <p className="text-gray-600 text-sm">Loading your transactions…</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Error state ───────────────────────────────────────────
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#050a06] flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="bg-red-500/10 border border-red-500/30 rounded-2xl px-8 py-6 text-center">
+            <p className="text-red-400 text-sm">{error}</p>
+            <p className="text-gray-600 text-xs mt-1">Please refresh the page.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#050a06]">
@@ -96,7 +123,7 @@ const DashboardPage = () => {
           topCategory={topCategory}
         />
 
-        {/* Chart + Add button row */}
+        {/* Add button + Chart */}
         <div className="flex flex-col gap-4">
           <div className="flex justify-end">
             <button
