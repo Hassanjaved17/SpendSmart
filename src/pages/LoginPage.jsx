@@ -7,34 +7,36 @@
 // ============================================================
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Mail, Lock, Loader2, AlertCircle, DollarSign } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 
 const LoginPage = () => {
-  const { login, signup, loginWithGoogle } = useAuth();
+  const { login, signup, loginWithGoogle, user } = useAuth();
   const navigate = useNavigate();
 
-  const [isLogin, setIsLogin]   = useState(true);
-  const [email, setEmail]       = useState("");
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [loading, setLoading] = useState(false);
   const [gLoading, setGLoading] = useState(false);
-  const [error, setError]       = useState("");
+  const [error, setError] = useState("");
+
+  if (user) return <Navigate to="/dashboard" replace />;
 
   // ── Friendly error messages ───────────────────────────────
   const friendlyError = (code) => {
     switch (code) {
       case "auth/user-not-found":
       case "auth/wrong-password":
-      case "auth/invalid-credential":   return "Invalid email or password.";
+      case "auth/invalid-credential": return "Invalid email or password.";
       case "auth/email-already-in-use": return "Email already registered. Please sign in.";
-      case "auth/weak-password":        return "Password must be at least 6 characters.";
-      case "auth/invalid-email":        return "Please enter a valid email address.";
-      case "auth/too-many-requests":    return "Too many attempts. Please try again later.";
+      case "auth/weak-password": return "Password must be at least 6 characters.";
+      case "auth/invalid-email": return "Please enter a valid email address.";
+      case "auth/too-many-requests": return "Too many attempts. Please try again later.";
       case "auth/popup-closed-by-user": return "Google sign-in was cancelled.";
-      default:                          return "Something went wrong. Please try again.";
+      default: return "Something went wrong. Please try again.";
     }
   };
 
@@ -97,21 +99,19 @@ const LoginPage = () => {
           <div className="flex bg-[#0a120b] rounded-xl p-1 mb-7 border border-emerald-900/30">
             <button
               onClick={() => { setIsLogin(true); setError(""); }}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                isLogin
-                  ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/20"
-                  : "text-gray-500 hover:text-gray-300"
-              }`}
+              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${isLogin
+                ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/20"
+                : "text-gray-500 hover:text-gray-300"
+                }`}
             >
               Sign In
             </button>
             <button
               onClick={() => { setIsLogin(false); setError(""); }}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                !isLogin
-                  ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/20"
-                  : "text-gray-500 hover:text-gray-300"
-              }`}
+              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${!isLogin
+                ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/20"
+                : "text-gray-500 hover:text-gray-300"
+                }`}
             >
               Sign Up
             </button>
