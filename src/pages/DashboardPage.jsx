@@ -1,28 +1,29 @@
 // ============================================================
 //  SPENDSMART — DashboardPage.jsx
-//  Phase 2 — Real Firebase Integration
+//  Phase 3 — Polish + Toast notifications
 //  Author  : Hassan Javed
 //  GitHub  : https://github.com/Hassanjaved17
 //  Built   : March 2026
 //  © 2026 Hassan Javed — All Rights Reserved
 // ============================================================
 
-import { useState }        from "react";
-import { Plus }            from "lucide-react";
-import Navbar              from "../components/ui/Navbar";
-import BalanceCard         from "../components/dashboard/BalanceCard";
-import StatsRow            from "../components/dashboard/StatsRow";
-import AddTransaction      from "../components/transactions/AddTransaction";
-import TransactionList     from "../components/transactions/TransactionList";
-import SpendingChart       from "../components/charts/SpendingChart";
-import Footer              from "../components/ui/Footer";
-import useTransactions     from "../hooks/useTransactions";
-import { Loader2 }         from "lucide-react";
+import { useState } from "react";
+import { Plus, Loader2 } from "lucide-react";
+import Navbar from "../components/ui/Navbar";
+import BalanceCard from "../components/dashboard/BalanceCard";
+import StatsRow from "../components/dashboard/StatsRow";
+import AddTransaction from "../components/transactions/AddTransaction";
+import TransactionList from "../components/transactions/TransactionList";
+import SpendingChart from "../components/charts/SpendingChart";
+import Footer from "../components/ui/Footer";
+import Toast from "../components/ui/Toast";
+import useTransactions from "../hooks/useTransactions";
+import useToast from "../hooks/useToast";
 
 const DashboardPage = () => {
   const [showModal, setShowModal] = useState(false);
 
-  // ── Real Firebase data via hook ───────────────────────────
+  // ── Firebase hook ─────────────────────────────────────────
   const {
     transactions,
     loading,
@@ -30,6 +31,9 @@ const DashboardPage = () => {
     addTransaction,
     deleteTransaction,
   } = useTransactions();
+
+  // ── Toast hook ────────────────────────────────────────────
+  const { toast, showToast, hideToast } = useToast();
 
   // ── Computed values ───────────────────────────────────────
   const totalIncome = transactions
@@ -40,13 +44,11 @@ const DashboardPage = () => {
     .filter((t) => t.type === "expense")
     .reduce((sum, t) => sum + t.amount, 0);
 
-  // This month expenses
-  const currentMonth    = new Date().toISOString().slice(0, 7);
+  const currentMonth = new Date().toISOString().slice(0, 7);
   const monthlyExpenses = transactions
     .filter((t) => t.type === "expense" && t.date.startsWith(currentMonth))
     .reduce((sum, t) => sum + t.amount, 0);
 
-  // Top category
   const categoryTotals = transactions
     .filter((t) => t.type === "expense")
     .reduce((acc, t) => {
@@ -57,13 +59,26 @@ const DashboardPage = () => {
     ? Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0][0]
     : "—";
 
-  // ── Handlers ─────────────────────────────────────────────
+  // ── Handlers with toasts ──────────────────────────────────
   const handleAdd = async (data) => {
-    await addTransaction(data);
+    try {
+      await addTransaction(data);
+      showToast(
+        `${data.type === "expense" ? "Expense" : "Income"} of PKR ${data.amount.toLocaleString()} added!`,
+        "success"
+      );
+    } catch (err) {
+      showToast("Failed to add transaction. Try again.", "error");
+    }
   };
 
   const handleDelete = async (id) => {
-    await deleteTransaction(id);
+    try {
+      await deleteTransaction(id);
+      showToast("Transaction deleted successfully.", "success");
+    } catch (err) {
+      showToast("Failed to delete transaction. Try again.", "error");
+    }
   };
 
   // ── Loading state ─────────────────────────────────────────
@@ -135,7 +150,7 @@ const DashboardPage = () => {
             </button>
           </div>
 
-          {/* Spending Chart */}
+          {/* Chart */}
           <SpendingChart transactions={transactions} />
         </div>
 
@@ -154,6 +169,15 @@ const DashboardPage = () => {
         <AddTransaction
           onClose={() => setShowModal(false)}
           onAdd={handleAdd}
+        />
+      )}
+
+      {/* ── Toast ── */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={hideToast}
         />
       )}
 
