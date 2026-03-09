@@ -122,7 +122,7 @@ const DashboardPage = () => {
     <div className="min-h-screen bg-[#050a06]">
 
       <Navbar />
-
+ 
       {/* Background glow */}
       <div className="fixed top-[-100px] right-[-100px] w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none" />
 
