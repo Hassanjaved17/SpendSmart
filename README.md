@@ -137,7 +137,7 @@ service cloud.firestore {
 
 **Hassan Javed**
 - GitHub: [@Hassanjaved17](https://github.com/Hassanjaved17)
-- LinkedIn: [Hassan Javed](https://linkedin.com/in/hassan-javed-964928289)
+- LinkedIn: [Hassan Javed]((https://www.linkedin.com/in/hassanjaveds/))
 
 ---
 
