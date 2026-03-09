@@ -38,7 +38,7 @@ const TransactionItem = ({ transaction, onDelete, onEdit }) => {
     <div className="group flex items-center gap-4 bg-[#0d1a0f] border border-emerald-900/30 hover:border-emerald-800/50 rounded-xl px-4 py-3.5 transition-all duration-300">
 
       {/* Category emoji */}
-      <div className="w-10 h-10 rounded-xl bg-[#0a120b] border border-emerald-900/30 flex items-center justify-center text-lg flex-shrink-0">
+      <div className="w-10 h-10 rounded-xl bg-[#0a120b] border border-emerald-900/30 flex items-center justify-center text-lg shrink-0">
         {emoji}
       </div>
 
@@ -65,7 +65,7 @@ const TransactionItem = ({ transaction, onDelete, onEdit }) => {
       </div>
 
       {/* Amount + actions */}
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex items-center gap-2 shrink-0">
         <span className={`font-bold text-sm ${isExpense ? "text-red-400" : "text-emerald-400"}`}>
           {isExpense ? "− " : "+ "}
           {formatPKR(amount)}
