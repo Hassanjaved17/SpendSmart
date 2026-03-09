@@ -7,13 +7,14 @@
 //  © 2026 Hassan Javed — All Rights Reserved
 // ============================================================
 
-import { useState, useEffect }          from "react";
-import { db }                           from "../firebase/firebase";
-import { useAuth }                      from "../context/AuthContext";
+import { useState, useEffect } from "react";
+import { db } from "../firebase/firebase";
+import { useAuth } from "../context/AuthContext";
 import {
   collection,
   addDoc,
   deleteDoc,
+  updateDoc,
   doc,
   onSnapshot,
   query,
@@ -22,19 +23,18 @@ import {
 } from "firebase/firestore";
 
 const useTransactions = () => {
-  const { user }                            = useAuth();
-  const [transactions, setTransactions]     = useState([]);
-  const [loading, setLoading]               = useState(true);
-  const [error, setError]                   = useState(null);
+  const { user } = useAuth();
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // ── Firestore collection ref for this user ────────────────
+  // ── Firestore collection ref ──────────────────────────────
   const getColRef = () =>
     collection(db, "users", user.uid, "transactions");
 
   // ── Real-time listener ────────────────────────────────────
   useEffect(() => {
     if (!user) return;
-
     setLoading(true);
 
     const q = query(getColRef(), orderBy("createdAt", "desc"));
@@ -45,7 +45,6 @@ const useTransactions = () => {
         const data = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-          // Convert Firestore timestamp to date string
           date: doc.data().date ?? new Date().toISOString().split("T")[0],
         }));
         setTransactions(data);
@@ -58,28 +57,38 @@ const useTransactions = () => {
       }
     );
 
-    // Cleanup listener on unmount
     return () => unsubscribe();
   }, [user]);
 
   // ── Add transaction ───────────────────────────────────────
   const addTransaction = async ({ type, amount, category, note, date }) => {
     if (!user) throw new Error("Not authenticated");
-
     await addDoc(getColRef(), {
       type,
       amount,
       category,
-      note:      note || "",
+      note: note || "",
       date,
       createdAt: serverTimestamp(),
+    });
+  };
+
+  // ── Edit transaction ──────────────────────────────────────
+  const editTransaction = async (transactionId, updatedData) => {
+    if (!user) throw new Error("Not authenticated");
+    const docRef = doc(db, "users", user.uid, "transactions", transactionId);
+    await updateDoc(docRef, {
+      type: updatedData.type,
+      amount: updatedData.amount,
+      category: updatedData.category,
+      note: updatedData.note || "",
+      date: updatedData.date,
     });
   };
 
   // ── Delete transaction ────────────────────────────────────
   const deleteTransaction = async (transactionId) => {
     if (!user) throw new Error("Not authenticated");
-
     const docRef = doc(db, "users", user.uid, "transactions", transactionId);
     await deleteDoc(docRef);
   };
@@ -89,6 +98,7 @@ const useTransactions = () => {
     loading,
     error,
     addTransaction,
+    editTransaction,
     deleteTransaction,
   };
 };

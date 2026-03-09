@@ -1,6 +1,6 @@
 // ============================================================
 //  SPENDSMART — DashboardPage.jsx
-//  Phase 3 — Polish + Toast notifications
+//  Final — Edit + Category Chart
 //  Author  : Hassan Javed
 //  GitHub  : https://github.com/Hassanjaved17
 //  Built   : March 2026
@@ -15,6 +15,7 @@ import StatsRow from "../components/dashboard/StatsRow";
 import AddTransaction from "../components/transactions/AddTransaction";
 import TransactionList from "../components/transactions/TransactionList";
 import SpendingChart from "../components/charts/SpendingChart";
+import CategoryChart from "../components/charts/CategoryChart";
 import Footer from "../components/ui/Footer";
 import Toast from "../components/ui/Toast";
 import useTransactions from "../hooks/useTransactions";
@@ -25,11 +26,8 @@ const DashboardPage = () => {
 
   // ── Firebase hook ─────────────────────────────────────────
   const {
-    transactions,
-    loading,
-    error,
-    addTransaction,
-    deleteTransaction,
+    transactions, loading, error,
+    addTransaction, editTransaction, deleteTransaction,
   } = useTransactions();
 
   // ── Toast hook ────────────────────────────────────────────
@@ -59,7 +57,7 @@ const DashboardPage = () => {
     ? Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0][0]
     : "—";
 
-  // ── Handlers with toasts ──────────────────────────────────
+  // ── Handlers ─────────────────────────────────────────────
   const handleAdd = async (data) => {
     try {
       await addTransaction(data);
@@ -67,8 +65,17 @@ const DashboardPage = () => {
         `${data.type === "expense" ? "Expense" : "Income"} of PKR ${data.amount.toLocaleString()} added!`,
         "success"
       );
-    } catch (err) {
+    } catch {
       showToast("Failed to add transaction. Try again.", "error");
+    }
+  };
+
+  const handleEdit = async (id, data) => {
+    try {
+      await editTransaction(id, data);
+      showToast("Transaction updated successfully.", "success");
+    } catch {
+      showToast("Failed to update transaction. Try again.", "error");
     }
   };
 
@@ -76,7 +83,7 @@ const DashboardPage = () => {
     try {
       await deleteTransaction(id);
       showToast("Transaction deleted successfully.", "success");
-    } catch (err) {
+    } catch {
       showToast("Failed to delete transaction. Try again.", "error");
     }
   };
@@ -114,13 +121,11 @@ const DashboardPage = () => {
   return (
     <div className="min-h-screen bg-[#050a06]">
 
-      {/* ── Navbar ── */}
       <Navbar />
 
-      {/* ── Background glow ── */}
+      {/* Background glow */}
       <div className="fixed top-[-100px] right-[-100px] w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* ── Main content ── */}
       <main className="max-w-6xl mx-auto px-4 py-8 flex flex-col gap-6">
 
         {/* Balance Card */}
@@ -138,33 +143,35 @@ const DashboardPage = () => {
           topCategory={topCategory}
         />
 
-        {/* Add button + Chart */}
-        <div className="flex flex-col gap-4">
-          <div className="flex justify-end">
-            <button
-              onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-5 py-3 rounded-xl text-sm transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-400/30"
-            >
-              <Plus size={17} strokeWidth={2.5} />
-              Add Transaction
-            </button>
-          </div>
+        {/* Add button */}
+        <div className="flex justify-end">
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-5 py-3 rounded-xl text-sm transition-all duration-300 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-400/30"
+          >
+            <Plus size={17} strokeWidth={2.5} />
+            Add Transaction
+          </button>
+        </div>
 
-          {/* Chart */}
+        {/* Charts — side by side on desktop, stacked on mobile */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <SpendingChart transactions={transactions} />
+          <CategoryChart transactions={transactions} />
         </div>
 
         {/* Transaction List */}
         <TransactionList
           transactions={transactions}
           onDelete={handleDelete}
+          onEdit={handleEdit}
         />
 
       </main>
 
       <Footer />
 
-      {/* ── Modal ── */}
+      {/* Add Modal */}
       {showModal && (
         <AddTransaction
           onClose={() => setShowModal(false)}
@@ -172,7 +179,7 @@ const DashboardPage = () => {
         />
       )}
 
-      {/* ── Toast ── */}
+      {/* Toast */}
       {toast && (
         <Toast
           message={toast.message}
