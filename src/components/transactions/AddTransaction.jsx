@@ -7,50 +7,26 @@
 // ============================================================
 
 import { useState } from "react";
-import { X, TrendingUp, TrendingDown, DollarSign, Tag, AlignLeft, Loader2 } from "lucide-react";
-
-// ── Categories ────────────────────────────────────────────────
-const EXPENSE_CATEGORIES = [
-  "Food",
-  "Transport",
-  "Shopping",
-  "Bills",
-  "Health",
-  "Education",
-  "Entertainment",
-  "Other",
-];
-
-const INCOME_CATEGORIES = [
-  "Salary",
-  "Freelance",
-  "Business",
-  "Investment",
-  "Gift",
-  "Other",
-];
+import { X, TrendingUp, TrendingDown, DollarSign, AlignLeft, Loader2 } from "lucide-react";
+import CategoryInput from "../ui/CategoryInput";
 
 const AddTransaction = ({ onClose, onAdd }) => {
-  const [type, setType]           = useState("expense");
-  const [amount, setAmount]       = useState("");
-  const [category, setCategory]   = useState("");
-  const [note, setNote]           = useState("");
-  const [date, setDate]           = useState(
+  const [type, setType] = useState("expense");
+  const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("");
+  const [note, setNote] = useState("");
+  const [date, setDate] = useState(
     new Date().toISOString().split("T")[0]
   );
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const categories = type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
-
-  // ── Reset category when type changes ─────────────────────
   const handleTypeChange = (newType) => {
     setType(newType);
     setCategory("");
     setError("");
   };
 
-  // ── Submit ────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -59,8 +35,8 @@ const AddTransaction = ({ onClose, onAdd }) => {
       setError("Please enter a valid amount.");
       return;
     }
-    if (!category) {
-      setError("Please select a category.");
+    if (!category.trim()) {
+      setError("Please enter or select a category.");
       return;
     }
 
@@ -69,7 +45,7 @@ const AddTransaction = ({ onClose, onAdd }) => {
       await onAdd({
         type,
         amount: Number(amount),
-        category,
+        category: category.trim(),
         note: note.trim(),
         date,
       });
@@ -82,12 +58,10 @@ const AddTransaction = ({ onClose, onAdd }) => {
   };
 
   return (
-    // ── Backdrop ──
     <div
       className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      {/* ── Modal box ── */}
       <div className="w-full max-w-md bg-[#0d1a0f] border border-emerald-900/50 rounded-2xl shadow-2xl shadow-black/60 overflow-hidden">
 
         {/* Header */}
@@ -104,16 +78,15 @@ const AddTransaction = ({ onClose, onAdd }) => {
         {/* Body */}
         <form onSubmit={handleSubmit} className="px-6 py-5 flex flex-col gap-5">
 
-          {/* ── Type toggle ── */}
+          {/* Type toggle */}
           <div className="flex bg-[#0a120b] rounded-xl p-1 border border-emerald-900/30">
             <button
               type="button"
               onClick={() => handleTypeChange("expense")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ${
-                type === "expense"
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ${type === "expense"
                   ? "bg-red-500/20 text-red-400 border border-red-500/30"
                   : "text-gray-500 hover:text-gray-300"
-              }`}
+                }`}
             >
               <TrendingDown size={14} />
               Expense
@@ -121,18 +94,17 @@ const AddTransaction = ({ onClose, onAdd }) => {
             <button
               type="button"
               onClick={() => handleTypeChange("income")}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ${
-                type === "income"
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ${type === "income"
                   ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                   : "text-gray-500 hover:text-gray-300"
-              }`}
+                }`}
             >
               <TrendingUp size={14} />
               Income
             </button>
           </div>
 
-          {/* ── Amount ── */}
+          {/* Amount */}
           <div className="flex flex-col gap-1.5">
             <label className="text-gray-400 text-xs font-medium uppercase tracking-wider">
               Amount (PKR)
@@ -151,32 +123,19 @@ const AddTransaction = ({ onClose, onAdd }) => {
             </div>
           </div>
 
-          {/* ── Category ── */}
+          {/* Category — smart combo */}
           <div className="flex flex-col gap-1.5">
             <label className="text-gray-400 text-xs font-medium uppercase tracking-wider">
               Category
             </label>
-            <div className="relative">
-              <Tag size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none" />
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                required
-                className="w-full bg-[#0a120b] border border-emerald-900/40 rounded-xl pl-10 pr-4 py-3 text-sm outline-none focus:border-emerald-500/70 focus:ring-1 focus:ring-emerald-500/20 transition-all appearance-none cursor-pointer text-white"
-              >
-                <option value="" disabled className="text-gray-600">
-                  Select category…
-                </option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat} className="bg-[#0d1a0f]">
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <CategoryInput
+              type={type}
+              value={category}
+              onChange={setCategory}
+            />
           </div>
 
-          {/* ── Date ── */}
+          {/* Date */}
           <div className="flex flex-col gap-1.5">
             <label className="text-gray-400 text-xs font-medium uppercase tracking-wider">
               Date
@@ -190,7 +149,7 @@ const AddTransaction = ({ onClose, onAdd }) => {
             />
           </div>
 
-          {/* ── Note (optional) ── */}
+          {/* Note */}
           <div className="flex flex-col gap-1.5">
             <label className="text-gray-400 text-xs font-medium uppercase tracking-wider">
               Note <span className="text-gray-600 normal-case">(optional)</span>
@@ -208,14 +167,14 @@ const AddTransaction = ({ onClose, onAdd }) => {
             </div>
           </div>
 
-          {/* ── Error ── */}
+          {/* Error */}
           {error && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm">
               {error}
             </div>
           )}
 
-          {/* ── Buttons ── */}
+          {/* Buttons */}
           <div className="flex gap-3 pt-1">
             <button
               type="button"
@@ -227,11 +186,10 @@ const AddTransaction = ({ onClose, onAdd }) => {
             <button
               type="submit"
               disabled={loading}
-              className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2 ${
-                type === "expense"
+              className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center justify-center gap-2 ${type === "expense"
                   ? "bg-red-500/80 hover:bg-red-500 text-white shadow-lg shadow-red-500/20 disabled:bg-red-900 disabled:text-red-700"
                   : "bg-emerald-500 hover:bg-emerald-400 text-black shadow-lg shadow-emerald-500/20 disabled:bg-emerald-900 disabled:text-emerald-700"
-              }`}
+                }`}
             >
               {loading ? (
                 <>
