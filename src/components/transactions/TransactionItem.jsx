@@ -30,7 +30,7 @@ const formatDate = (dateStr) =>
   });
 
 const TransactionItem = ({ transaction, onDelete, onEdit }) => {
-  const { id, type, amount, category, note, date } = transaction;
+  const { type, amount, category, note, date } = transaction;
   const isExpense = type === "expense";
   const emoji = CATEGORY_EMOJI[category] ?? "💰";
 
@@ -38,7 +38,7 @@ const TransactionItem = ({ transaction, onDelete, onEdit }) => {
     <div className="group flex items-center gap-4 bg-[#0d1a0f] border border-emerald-900/30 hover:border-emerald-800/50 rounded-xl px-4 py-3.5 transition-all duration-300">
 
       {/* Category emoji */}
-      <div className="w-10 h-10 rounded-xl bg-[#0a120b] border border-emerald-900/30 flex items-center justify-center text-lg shrink-0">
+      <div className="w-10 h-10 rounded-xl bg-[#0a120b] border border-emerald-900/30 flex items-center justify-center text-lg flex-shrink-0">
         {emoji}
       </div>
 
@@ -47,8 +47,8 @@ const TransactionItem = ({ transaction, onDelete, onEdit }) => {
         <div className="flex items-center gap-2">
           <span className="text-white text-sm font-medium">{category}</span>
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${isExpense
-              ? "bg-red-500/10 text-red-400 border border-red-500/20"
-              : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+            ? "bg-red-500/10 text-red-400 border border-red-500/20"
+            : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
             }`}>
             {isExpense ? "Expense" : "Income"}
           </span>
@@ -65,13 +65,13 @@ const TransactionItem = ({ transaction, onDelete, onEdit }) => {
       </div>
 
       {/* Amount + actions */}
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-2 flex-shrink-0">
         <span className={`font-bold text-sm ${isExpense ? "text-red-400" : "text-emerald-400"}`}>
           {isExpense ? "− " : "+ "}
           {formatPKR(amount)}
         </span>
 
-        {/* Edit button — always visible on mobile, hover on desktop */}
+        {/* Edit button */}
         <button
           onClick={() => onEdit(transaction)}
           className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-700 hover:text-emerald-400 hover:bg-emerald-500/10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200"
@@ -80,9 +80,9 @@ const TransactionItem = ({ transaction, onDelete, onEdit }) => {
           <Pencil size={12} />
         </button>
 
-        {/* Delete button — always visible on mobile, hover on desktop */}
+        {/* Delete button — passes full transaction for preview in modal */}
         <button
-          onClick={() => onDelete(id)}
+          onClick={() => onDelete(transaction)}
           className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-700 hover:text-red-400 hover:bg-red-500/10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200"
           title="Delete transaction"
         >
@@ -96,4 +96,4 @@ const TransactionItem = ({ transaction, onDelete, onEdit }) => {
 
 export default TransactionItem;
 
-// © 2026 Hassan Javed — All Rights Reserved
+// © 2026 Hassan Javed — All Rights Reserved 

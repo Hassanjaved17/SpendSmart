@@ -10,6 +10,7 @@ import { useState } from "react";
 import { Search, Filter, ReceiptText } from "lucide-react";
 import TransactionItem from "./TransactionItem";
 import EditTransaction from "./EditTransaction";
+import DeleteConfirmModal from "../ui/DeleteConfirmModal";
 
 const FILTER_OPTIONS = ["All", "Income", "Expense"];
 
@@ -17,6 +18,7 @@ const TransactionList = ({ transactions = [], onDelete, onEdit }) => {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [editingTransaction, setEditing] = useState(null);
+  const [deletingTransaction, setDeleting] = useState(null);
 
   // ── Filter + search ───────────────────────────────────────
   const filtered = transactions
@@ -84,7 +86,7 @@ const TransactionList = ({ transactions = [], onDelete, onEdit }) => {
               <TransactionItem
                 key={transaction.id}
                 transaction={transaction}
-                onDelete={onDelete}
+                onDelete={(t) => setDeleting(t)}
                 onEdit={(t) => setEditing(t)}
               />
             ))
@@ -112,6 +114,18 @@ const TransactionList = ({ transactions = [], onDelete, onEdit }) => {
           onEdit={async (id, data) => {
             await onEdit(id, data);
             setEditing(null);
+          }}
+        />
+      )}
+
+      {/* Delete confirmation modal */}
+      {deletingTransaction && (
+        <DeleteConfirmModal
+          transaction={deletingTransaction}
+          onClose={() => setDeleting(null)}
+          onConfirm={async (id) => {
+            await onDelete(id);
+            setDeleting(null);
           }}
         />
       )}
